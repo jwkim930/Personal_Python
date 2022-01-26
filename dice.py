@@ -156,5 +156,3 @@ def rangechance(face, dice, lower, upper, est=False, trial=1000000):
 
     print("The probability of getting a number between " + str(lower) + " and " + str(upper) + " by throwing " + str(dice) + "D" + str(face) + " is:")
     print(str(prob) + "%")
-
-# This is a test to see if GitHub syncing is working properly. Delete once you see it works.

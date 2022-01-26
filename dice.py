@@ -3,6 +3,21 @@ import numpy as np
 import sorter as srt
 
 
+def roll(face, dice):
+  """
+  Simulates rolling a (face)-sided die (dice) times
+  :param face: the number (int) of faces of the dice. For example, enter 6 for D6's.
+  :param dice: the number (int) of dices to roll.
+  :return: the result of the dice roll
+  """
+
+  num = 0
+  for n in range(dice):   # roll a (face)-sided die (dice) times
+      num += rand.randint(1, face)   # randint() IS inclusive!
+
+  return num
+
+
 def diceest(face, dice, trial):
     """
     Simulates a given number of dice throws to estimate the probability of getting a number in %.
@@ -16,14 +31,12 @@ def diceest(face, dice, trial):
     """
 
     count = {}
-    for n in range(dice, face * dice + 1):   # min == # of dice * lowest number (1), max == # of dice * highest number
+    for n in range(dice, face * dice + 1):   # initialize key:value pairs
+        # min == # of dice * lowest number (1), max == # of dice * highest number
         count[n] = 0
 
     for iteration in range(trial):   # repeated (trial) times
-        num = 0
-        for n in range(dice):   # roll a (face)-sided die (dice) times
-            num += rand.randint(1, face)   # randint() IS inclusive!
-        count[num] += 1
+        count[roll(face, dice)] += 1
         print(str(iteration / trial * 100) + "% of the simulations completed")
 
     for number, occur in count.items():   # convert the counts to %

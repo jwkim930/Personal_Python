@@ -3,11 +3,11 @@ import numpy as np
 import sorter as srt
 
 
-def roll(face, dice):
+def roll(face, dice=1):
   """
   Simulates rolling a (face)-sided die (dice) times
   :param face: the number (int) of faces of the dice. For example, enter 6 for D6's.
-  :param dice: the number (int) of dices to roll.
+  :param dice: the number (int) of dice to roll. The default value is 1.
   :return: the result of the dice roll
   """
 

@@ -3,7 +3,7 @@ import numpy as np
 import sorter as srt
 
 
-def roll(face:int, dice:int=1):
+def roll(face:int, dice:int=1) -> int:
   """
   Simulates rolling a (face)-sided die (dice) times
   :param face: the number of faces of the dice. For example, enter 6 for D6's.
@@ -18,14 +18,14 @@ def roll(face:int, dice:int=1):
   return num
 
 
-def diceest(face:int, dice:int, trial:int):
+def diceest(face:int, dice:int, trial:int) -> dict:
     """
-    Simulates a given number of dice throws to estimate the probability of getting a number in %.
+    Simulates dice throws to estimate the probability of getting each possible number in %.
     Prints the progress to the console in percentage.
     Returns the result as a dictionary,
     where the keys are the numbers (int) and the values are the probabilities in % (float).
     :param face: the number of faces of the dice. For example, enter 6 for D6's.
-    :param dice: the number of dices to roll.
+    :param dice: the number of dice to roll.
     :param trial: the number of dice throws to be made for estimation. Higher the more accurate but takes longer.
     :return: a dictionary mapping the possible numbers to the probability of getting it
     """
@@ -47,14 +47,15 @@ def diceest(face:int, dice:int, trial:int):
     return count
 
 
-def dicecalc(face:int, dice:int):
+def dicecalc(face:int, dice:int) -> dict:
     """
-    Calculates the probability of getting a number by rolling dice, in %.
+    Calculates the probability of getting each possible number by rolling dice, in %.
     Prints the progress to the console in percentage.
     Returns the result as a dictionary,
     where the keys are the numbers (int) and the values are the probabilities in % (float).
     :param face: the number of faces of the dice. For example, enter 6 for D6's.
-    :param dice: the number of dices to roll.
+    :param dice: the number of dice to roll.
+    :return: a dictionary mapping the possible numbers to the probability of getting it
     """
 
     grid = np.zeros([face for i in range(dice)], dtype=int)   # (dice)-D grid with length (face), the result of the list comprehension is [6, 6, 6] for 3D6
@@ -103,10 +104,10 @@ def printresult(ascending:bool, count:dict, limit:int, bynum:bool):
 
 def est(face:int, dice:int, trial:int, limit:int=None, ascending:bool=False, bynum:bool=False):
     """
-    Simulates a given number of dice throws to estimate the probability of getting a number in %.
+    Simulates dice throws to estimate the probability of getting each possible number in %.
     Prints the result to the console in descending order based on the probability.
     :param face: the number of faces of the dice. For example, enter 6 for D6's.
-    :param dice: the number of dices to roll.
+    :param dice: the number of dice to roll.
     :param trial: the number of dice throws to be made for estimation. Higher the more accurate but takes longer.
     :param limit: When set to a positive integer, it will only display that number of the top probabilities.
     If ascending is also set to True, it will only print the lowest probabilities.
@@ -127,10 +128,10 @@ def est(face:int, dice:int, trial:int, limit:int=None, ascending:bool=False, byn
 
 def calc(face:int, dice:int, limit:int=None, ascending:bool=False, bynum:bool=False):
     """
-    Calculates the probability of getting a number by rolling dice, in %.
+    Calculates the probability of getting each possible number by rolling dice, in %.
     Prints the result to the console in descending order based on the probability.
     :param face: the number of faces of the dice. For example, enter 6 for D6's.
-    :param dice: the number of dices to roll.
+    :param dice: the number of dice to roll.
     :param limit: When set to a positive integer, it will only display that number of the top probabilities.
     If ascending is also set to True, it will only print the lowest probabilities.
     :param ascending: When set to True, prints the result in ascending order instead.
@@ -150,9 +151,9 @@ def calc(face:int, dice:int, limit:int=None, ascending:bool=False, bynum:bool=Fa
 
 def rangechance(face:int, dice:int, lower:int, upper:int, est:bool=False, trial:int=1000000):
     """
-    Prints to the console the probability of getting a number between the lower and the upper bound.
+    Prints to the console the probability of getting a number between the lower and the upper bound from the dice roll.
     :param face: the number of faces of the dice. For example, enter 6 for D6's.
-    :param dice: the number of dices to roll.
+    :param dice: the number of dice to roll.
     :param lower: the lower bound (inclusive) of the range
     :param upper: the upper bound (inclusive) of the range
     :param est: When set to True, use estimated values from simulations instead of calculated ones.
@@ -174,3 +175,25 @@ def rangechance(face:int, dice:int, lower:int, upper:int, est:bool=False, trial:
 
     print("The probability of getting a number between " + str(lower) + " and " + str(upper) + " by throwing " + str(dice) + "D" + str(face) + " is:")
     print(str(prob) + "%")
+
+
+def expect(face:int, dice:int, est:bool=False, trial:int=1000000):
+  """Prints to the console the expected value of the dice roll.
+  :param face: the number of faces of the dice. For example, enter 6 for D6's.
+  :param dice: the number of dice to roll.
+  :param est: When set to True, use estimated values from simulations instead of calculated ones.
+  Intended for throws that are too big for to be calculated.
+  :param trial: the number of dice throws to be made for estimation. Higher the more accurate but takes longer.
+  Only used when est == True. The default is one million throws."""
+
+  if est:
+    count = diceest(face, dice, trial)
+  else:
+    count = dicecalc(face, dice)
+    
+  value = 0   # this is the expected value
+  for num, prob in count.items():
+    value += num * (prob/100)
+
+  print("The expected value of throwing " + str(dice) + "D" + str(face) + " is:")
+  print(value)

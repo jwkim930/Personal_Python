@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def enter(col: int, row: int) -> np.ndarray:
+def enter(row: int, col: int) -> np.ndarray:
   """
   Takes console input from user to get a matrix.
   Input is taken by each row.
@@ -13,7 +13,7 @@ def enter(col: int, row: int) -> np.ndarray:
 
   mx = np.zeros((row, col), int)
 
-  def show_mx(mx:np.ndarray, col:int, row:int) -> str:
+  def show_mx(mx:np.ndarray, row:int, col:int) -> str:
     """
     Gives the visual representation of the array being built.
     '*' represents the entry being entered,
@@ -35,11 +35,13 @@ def enter(col: int, row: int) -> np.ndarray:
     # fill up the ones already entered
     r = 0
     c = 0
-    while r != row and c != col:
+    height = mx.shape[0]
+    width = mx.shape[1]
+    while not(r == row and c == col):
       visual += str(mx[r, c])
-
-      if c == col:
+      if c == width - 1:  # end of row reached
         r += 1
+        c = 0
         visual += "\n"
       else:
         c += 1
@@ -47,17 +49,20 @@ def enter(col: int, row: int) -> np.ndarray:
 
     # add * to where the new entry should go
     visual += "*"
+    if c == width - 1:  # end of row reached
+      r += 1
+      c = 0
+      visual += "\n"
+    else:
+      c += 1
+      visual += " "
 
     # add - to the rest
-    r = row
-    c = col
-    width = mx.shape[0]
-    height = mx.shape[1]
-    while r != height and c != width:
+    while r != height:
       visual += "-"
-
-      if c == col:
+      if c == width - 1:  # end of row reached
         r += 1
+        c = 0
         visual += "\n"
       else:
         c += 1
@@ -67,7 +72,10 @@ def enter(col: int, row: int) -> np.ndarray:
   
   for r in range(row):
     for c in range(col):
-      print(show_mx(mx, col, row))
-      mx[r, c] = input()
+      print(show_mx(mx, r, c))
+      mx[r, c] = input("Replace * with: ")
     
   return mx
+
+
+print(enter(3,4))

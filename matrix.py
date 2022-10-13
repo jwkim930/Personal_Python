@@ -1,11 +1,12 @@
 import numpy as np
 
 
-def enter(row: int, col: int) -> np.ndarray:
+def ienter(row: int, col: int) -> np.ndarray:
   """
-  Takes console input from user to get a matrix.
-  Input is taken by each row.
-  
+  Takes console input from user to get a matrix of integers.
+  The input values must all be integers.
+  Use enter() for a matrix of floats.
+
   :param col: the number of columns of the matrix
   :param row: the number of rows of the matrix
   :return: a numpy array representing the entered matrix
@@ -57,42 +58,13 @@ def enter(row: int, col: int) -> np.ndarray:
 
     return s[0:i] + r + s[i+1:]
 
-  def locate(vis:str, width:int, row:int, col:int) -> int:
-    """
-    Determines the string-index of the visual representation of the matrix
-    for a particular entry.
-
-    :param vis: the visual representation of the matrix
-    :param width: the number of columns of the matrix
-    :param row: which row the entry is at
-    :param col: which column the entry is at
-    :return: the string-index of the entry
-    """
-
-    # each entry is separated by one whitespace, either ' ' or '\n'
-    # the first entry never follows a whitespace, and the last entry is never followed by a whitespace
-    # determine what-th entry the entry of interest is by left to right and top to bottom,
-    # then count string-index towards it linearly
-
-    th = (row * width) + col
-    # th is what-th entry it is, calculated by (# of entries for the rows above) + (# of entries in current row)
-    # th == 0 for the first entry
-
-    i = 0   # string-index to be returned
-    entry = 0   # entry being inspected
-    while entry != th:
-      if vis[i] == " " or vis[i] == "\n":
-        entry += 1
-      i += 1
-
-    return i
-
   r = 0   # reset r for new iteration, c should've been reset from the first loop
+  vis_i = 0   # this is the index of '*' in visual
   while r != row:
     print(visual)
     new = input("Replace * with: ")
     mx[r, c] = int(new)
-    visual = replace(visual, locate(visual, col, r, c), new)
+    visual = replace(visual, vis_i, new)
 
     if c == col - 1:  # end of row reached
       r += 1
@@ -102,4 +74,26 @@ def enter(row: int, col: int) -> np.ndarray:
       c += 1
       visual += " "
 
+    vis_i += (len(new) + 1)   # new entry + 1 whitespace
+
   return mx
+
+
+def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
+  """
+  Takes console input from user to get a matrix of floats.
+  Use ienter() for an integer matrix.
+
+  :param col: the number of columns of the matrix
+  :param row: the number of rows of the matrix
+  :param showto: the decimal place of entry to be shown during entering, default is 2.
+  it does not affect the actual value being entered in.
+  :param sci: when set to True, entries are entered/shown in scientific notation
+  it does not affect the actual value being entered in.
+  :return: a numpy array representing the entered matrix
+  """
+
+  pass
+
+
+print(ienter(3, 2))

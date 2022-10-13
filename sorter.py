@@ -1,4 +1,4 @@
-def sortdict(dict, bykey=False, descend=False):
+def sortdict(dict:dict, bykey:bool=False, descend:bool=False):
     """
     Returns a list of lists containing the content of the dictionary, sorted in ascending order by value.
     Each list represents [key, value].

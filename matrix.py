@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 
 def ienter(row: int, col: int) -> np.ndarray:
@@ -208,3 +209,62 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
     visual = replace(visual, (vis_i, vis_i + keylen), "*" * keylen)
 
   return mx
+
+
+def mult(*matrices:np.ndarray) -> np.ndarray:
+  """
+  Returns the product of the matrices.
+  At least 2 matrices are required.
+
+  :param matrices: any number of matrices to be multiplied together.
+  the matrix multiplication must be defined.
+  :return: the product of matrices used as argument
+  """
+  assert len(matrices) >= 2, "at least 2 matrices are required"
+
+  prod = np.dot(matrices[0], matrices[1])   # product to be returned
+  for i in range(2, len(matrices)):
+    prod = np.dot(prod, matrices[i])
+
+  return prod
+
+
+def add(*matrices:np.ndarray) -> np.ndarray:
+  """
+  Returns the sum of the matrices.
+  At least 2 matrices are required.
+
+  :param matrices: any number of matrices to be added together.
+  all matrices must have the same dimension.
+  :return: the sum of the matrices used as argument
+  """
+  assert len(matrices) >= 2, "at least 2 matrices are required"
+
+  msum = np.add(matrices[0], matrices[1])   # sum to be returned
+  for i in range(2, len(matrices)):
+    msum = np.add(msum, matrices[i])
+
+  return msum
+
+
+def smul(c:Union[int, float], m:np.ndarray) -> np.ndarray:
+  """
+  Returns the scalar multiple of the matrix.
+
+  :param c: the scalar to be multiplied to
+  :param m: the matrix to be multiplied
+  :return: the resulting matrix
+  """
+  return c * m
+
+
+def subt(m1:np.ndarray, m2:np.ndarray) -> np.ndarray:
+  """
+  Returns the difference of two matrices, m1 - m2.
+  m1 and m2 must have the same dimension.
+
+  :param m1: matrix to be subtracted from
+  :param m2: matrix to subtract
+  :return: the matrix resulting from subtraction
+  """
+  return add(m1, smul(-1, m2))

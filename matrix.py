@@ -211,6 +211,26 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
   return mx
 
 
+def zero(n:int) -> np.ndarray:
+  """
+  Returns a zero (integer) matrix of the given size.
+
+  :param n: the size of the zero matrix
+  :return: the n by n zero matrix
+  """
+  return np.zeros((n, n), dtype=int)
+
+
+def identity(n:int) -> np.ndarray:
+  """
+  Returns an identity (integer) matrix of the given size.
+
+  :param n: the size of the identity matrix
+  :return: the n by n identity matrix
+  """
+  return np.identity(n, dtype=int)
+  
+
 def mult(*matrices:np.ndarray) -> np.ndarray:
   """
   Returns the product of the matrices.
@@ -273,7 +293,8 @@ def subt(m1:np.ndarray, m2:np.ndarray) -> np.ndarray:
 def det(m:np.ndarray) -> Union[int, float]:
   """
   Returns the determinant of the matrix.
-  The input matrix must be a 2-dimensional square matrix.
+  The input matrix must be a non-empty 2-dimensional square matrix.
+  The determinant of an empty matrix is 1.
 
   :param m: a 2-dimensional square matrix
   :return: the determinant of the matrix
@@ -283,6 +304,8 @@ def det(m:np.ndarray) -> Union[int, float]:
   assert m.shape[0] == m.shape[1], "matrix must be square"
 
   l = m.shape[0]   # length
+  if l == 0:
+    return 1
   if l == 1:
     return m[0,0]
   elif l == 2:

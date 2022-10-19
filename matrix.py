@@ -268,3 +268,34 @@ def subt(m1:np.ndarray, m2:np.ndarray) -> np.ndarray:
   :return: the matrix resulting from subtraction
   """
   return add(m1, smul(-1, m2))
+
+
+def det(m:np.ndarray) -> Union[int, float]:
+  """
+  Returns the determinant of the matrix.
+  The input matrix must be a 2-dimensional square matrix.
+
+  :param m: a 2-dimensional square matrix
+  :return: the determinant of the matrix
+  """
+  
+  assert m.ndim == 2, "matrix must be 2-dimensional"
+  assert m.shape[0] == m.shape[1], "matrix must be square"
+
+  l = m.shape[0]   # length
+  if l == 1:
+    return m[0,0]
+  elif l == 2:
+    return (m[0,0] * m[1,1]) - (m[0,1] * m[1,0])
+  else:
+    result = 0
+    for col in range(l):
+      # expand matrix along the first row
+      left_piece = m[1:l, 0:col]
+      right_piece = m[1:l, col+1:l]
+      piece = np.hstack((left_piece, right_piece))
+
+      result += (-1)**(col) * m[0, col] * det(piece)
+    
+    return result
+    

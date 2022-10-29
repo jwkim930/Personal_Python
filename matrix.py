@@ -50,6 +50,7 @@ def ienter(row: int, col: int) -> np.ndarray:
   def replace(s: str, i: int, r: str) -> str:
     """
     Returns the string with the character at given index replaced with r.
+
     :param s: string to have the replacement happen
     :param i: index of the target character
     :param r: string to be used for replacement
@@ -89,9 +90,9 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
   :param col: the number of columns of the matrix
   :param row: the number of rows of the matrix
   :param showto: the decimal place of entry to be shown during entering, default is 2.
-  it does not affect the actual value being entered in.
+                 it does not affect the actual value being entered in.
   :param sci: when set to True, entries are entered/shown in scientific notation
-  it does not affect the actual value being entered in.
+              it does not affect the actual value being entered in.
   :return: a numpy array representing the entered matrix
   """
 
@@ -164,6 +165,7 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
   def replace(s: str, i: tuple, r: str) -> str:
     """
     Returns the string with the characters at given index range replaced with r.
+
     :param s: string to have the replacement happen
     :param i: index range (inclusive lower bound, exclusive upper bound) of the characters to be replaced
     :param r: string to be used for replacement
@@ -237,7 +239,7 @@ def mult(*matrices:np.ndarray) -> np.ndarray:
   At least 2 matrices are required.
 
   :param matrices: any number of matrices to be multiplied together.
-  the matrix multiplication must be defined.
+                   the matrix multiplication must be defined.
   :return: the product of matrices used as argument
   """
   assert len(matrices) >= 2, "at least 2 matrices are required"
@@ -255,7 +257,7 @@ def add(*matrices:np.ndarray) -> np.ndarray:
   At least 2 matrices are required.
 
   :param matrices: any number of matrices to be added together.
-  all matrices must have the same dimension.
+                   all matrices must have the same dimension.
   :return: the sum of the matrices used as argument
   """
   assert len(matrices) >= 2, "at least 2 matrices are required"

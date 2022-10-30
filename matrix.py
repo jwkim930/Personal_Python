@@ -132,9 +132,11 @@ def ienter(row: int, col: int) -> matrixer:
   while r != row:
     print(visual)
     new = input("Replace * with: ")
+    while not new.isnumeric():
+      new = input("Non-integer input, try again: ")
     mx[r, c] = int(new)
-    visual = replace(visual, vis_i, new)
 
+    visual = replace(visual, vis_i, new)
     if c == col - 1:  # end of row reached
       r += 1
       c = 0
@@ -239,21 +241,56 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> matrixer:
   # take input and fill up
   r = 0  # reset r for new iteration, c should've been reset from the first loop
   vis_i = 0  # this is the index of the first '*' among '*'s in visual
+
+  def isfloat(s: str) -> bool:
+    """
+    Returns true if string can be converted to float, false otherwise.
+
+    :param s: string to be checked
+    :return: true/false
+    """
+    try:
+      float(s)
+      return True
+    except ValueError:
+      return False
+
   while r != row:
     print(visual)
     if not sci:
       new = input("Replace * with: ")
+
+      while not isfloat(new):
+        new = input("Non-float input, try again: ")
       newf = float(new)
     else:
       new = input("Replace * with (in scientific notation, like 2.34E7): ").upper()
-      while "E" not in new:
-        print("Invalid scientific notation, try again")
-        new = input("Replace * with (in scientific notation, like 2.34E7): ").upper()
 
-      newn = new.split("E")
+      def issci(s:str) -> bool:
+        """
+        Returns true is string is in proper scientific notation, false otherwise.
+
+        :param s: string to be checked
+        :return: true/false
+        """
+        # shortest string denoting scientific notation is 3 characters long (e.g. 3e0)
+        if isfloat(s) and len(s) >= 3:
+          # s[1] must be either '.' (e.g. 3.00e8) or 'E' (e.g. 2e8) for positive
+          # s[2] must be either '.' or 'E' for negative
+          if s[0] == '-':
+            return 'E' in s and s[2] in ('.', 'E')
+          else:
+            return 'E' in s and s[1] in ('.', 'E')
+
+        return False
+
+      while not issci(new):
+        new = input("Invalid scientific notation, try again: ").upper()
+
+      newf = float(new)   # actual value to go into matrix
+      newn = new.split("E")   # used for displaying values
       newn[0] = float(newn[0])
       newn[1] = int(newn[1])
-      newf = newn[0] * (10 ** newn[1])  # actual value to go into matrix
 
     mx[r, c] = newf
 

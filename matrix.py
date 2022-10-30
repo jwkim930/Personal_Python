@@ -2,7 +2,75 @@ import numpy as np
 from typing import Union
 
 
-def ienter(row: int, col: int) -> np.ndarray:
+class matrixer(object):
+  def __init__(self, mx:np.ndarray):
+    """
+    TO USERS: Please use ienter() or enter() instead of initializing directly.
+    """
+    self.__matrix = mx
+    self.dim = mx.shape
+    self.dtype = mx.dtype
+
+  def __repr__(self):
+    mx = self.__matrix
+    return str(mx)
+
+  def __str__(self):
+    mx = self.__matrix
+    return str(mx)
+
+  def __add__(self, b):
+    assert type(b) is matrixer, "addition must be between matrices"
+    return matrixer(np.add(self.__matrix, b.__matrix))
+
+  def __mul__(self, b):
+    assert type(b) in (matrixer, int, float), "can only multiply number or matrix"
+    if type(b) is matrixer:
+      return matrixer(np.dot(self.__matrix, b.__matrix))
+    else:
+      return matrixer(np.dot(self.__matrix, b))
+
+  def __sub__(self, b):
+    assert type(b) is matrixer, "subtraction must be between matrices"
+    return self + (b * (-1))
+
+  def det(self) -> Union[int, float]:
+    """
+    Returns the determinant of the matrix.
+    The matrix must be a non-empty 2-dimensional square matrix.
+    The determinant of an empty matrix is 1.
+
+    :return: the determinant of the matrix
+    """
+
+    assert self.dim[0] == self.dim[1], "matrix must be square"
+
+    l = self.dim[0]  # length
+    m = self.__matrix
+
+    def de(m, l):
+      if l == 0:
+        return 1
+      if l == 1:
+        return m[0, 0]
+      elif l == 2:
+        return (m[0, 0] * m[1, 1]) - (m[0, 1] * m[1, 0])
+      else:
+        result = 0
+        for col in range(l):
+          # expand matrix along the first row
+          left_piece = m[1:l, 0:col]
+          right_piece = m[1:l, col + 1:l]
+          piece = np.hstack((left_piece, right_piece))
+
+          result += (-1) ** (col) * m[0, col] * de(piece, l - 1)
+
+        return result
+
+    return de(m, l)
+
+
+def ienter(row: int, col: int) -> matrixer:
   """
   Takes console input from user to get a matrix of integers.
   The input values must all be integers.
@@ -10,9 +78,8 @@ def ienter(row: int, col: int) -> np.ndarray:
 
   :param col: the number of columns of the matrix
   :param row: the number of rows of the matrix
-  :return: a numpy array representing the entered matrix
+  :return: a matrix object representing the entered matrix
   """
-
   assert type(row) is int and type(col) is int, "row/col must be integers"
   assert row > 0 and col > 0, "row/col must be positive"
 
@@ -23,9 +90,9 @@ def ienter(row: int, col: int) -> np.ndarray:
   # 1 1 * -
   # - - - -
 
-  visual = "*"   # this is the visual representation
-  r = 0   # row-coordinate for iteration
-  c = 0   # col-coordinate for iteration
+  visual = "*"  # this is the visual representation
+  r = 0  # row-coordinate for iteration
+  c = 0  # col-coordinate for iteration
   # insert whitespace appropriately
   if c == col - 1:  # end of row reached
     r += 1
@@ -60,8 +127,8 @@ def ienter(row: int, col: int) -> np.ndarray:
     return s[0:i] + r + s[i + 1:]
 
   # take input and fill up
-  r = 0   # reset r for new iteration, c should've been reset from the first loop
-  vis_i = 0   # this is the index of '*' in visual
+  r = 0  # reset r for new iteration, c should've been reset from the first loop
+  vis_i = 0  # this is the index of '*' in visual
   while r != row:
     print(visual)
     new = input("Replace * with: ")
@@ -76,13 +143,13 @@ def ienter(row: int, col: int) -> np.ndarray:
       c += 1
       visual += " "
 
-    vis_i += (len(new) + 1)   # new entry + 1 whitespace
+    vis_i += (len(new) + 1)  # new entry + 1 whitespace
     visual = replace(visual, vis_i, "*")
 
-  return mx
+  return matrixer(mx)
 
 
-def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
+def enter(row:int, col:int, showto:int=2, sci:bool=False) -> matrixer:
   """
   Takes console input from user to get a matrix of floats.
   Use ienter() for an integer matrix.
@@ -93,21 +160,16 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
                  it does not affect the actual value being entered in.
   :param sci: when set to True, entries are entered/shown in scientific notation
               it does not affect the actual value being entered in.
-  :return: a numpy array representing the entered matrix
+  :return: a matrix object representing the entered matrix
   """
-
-  assert type(row) is int and type(col) is int, "row/col must be integers"
-  assert row > 0 and col > 0, "row/col must be positive"
-
   mx = np.zeros((row, col))
   # build the visual representation
-
   # For sci == False, the matrix would look something like this (3 by 4 and showto == 2 for example):
   # 0.00 0.00 0.00 0.00
   # 1.00 1.00 **** ----
   # ---- ---- ---- ----
   if not sci:
-    keylen = 2 + showto   # number of */- to use, 2 for '0.'
+    keylen = 2 + showto  # number of */- to use, 2 for '0.'
     visual = "*" * keylen
     r = 0
     c = 0
@@ -184,17 +246,19 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
       newf = float(new)
     else:
       new = input("Replace * with (in scientific notation, like 2.34E7): ").upper()
-      assert "E" in new, "invalid scientific notation"
+      while "E" not in new:
+        print("Invalid scientific notation, try again")
+        new = input("Replace * with (in scientific notation, like 2.34E7): ").upper()
 
       newn = new.split("E")
       newn[0] = float(newn[0])
       newn[1] = int(newn[1])
-      newf = newn[0] * (10 ** newn[1])
+      newf = newn[0] * (10 ** newn[1])  # actual value to go into matrix
 
     mx[r, c] = newf
 
     if not sci:
-      new = format(round(newf, showto), "." + str(showto) + "f")   # round to showto-th place
+      new = format(round(newf, showto), "." + str(showto) + "f")  # round to showto-th place
     else:
       new = format(round(newn[0], showto), "." + str(showto) + "f") + "E" + str(newn[1])
 
@@ -207,120 +271,30 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> np.ndarray:
       c += 1
       visual += " "
 
-    vis_i += len(new) + 1   # new entry + 1 whitespace
+    vis_i += len(new) + 1  # new entry + 1 whitespace
     visual = replace(visual, (vis_i, vis_i + keylen), "*" * keylen)
 
-  return mx
+  return matrixer(mx)
 
 
-def zero(n:int) -> np.ndarray:
+def zero(row:int, col:int, dtype:type=float) -> matrixer:
   """
-  Returns a zero (integer) matrix of the given size.
+  Returns a zero matrix of the given size. Entries are in float by default.
 
-  :param n: the size of the zero matrix
-  :return: the n by n zero matrix
+  :param row: number of rows
+  :param col: number of columns
+  :param dtype: set to int or float to control data type
+  :return: the row by col zero matrix
   """
-  return np.zeros((n, n), dtype=int)
+  return matrixer(np.zeros((row, col), dtype))
 
 
-def identity(n:int) -> np.ndarray:
+def identity(n:int, dtype:type=float) -> matrixer:
   """
-  Returns an identity (integer) matrix of the given size.
+  Returns an identity matrix of the given size. Entries are in float by default.
 
   :param n: the size of the identity matrix
+  :param dtype: set to int or float to control data type
   :return: the n by n identity matrix
   """
-  return np.identity(n, dtype=int)
-  
-
-def mult(*matrices:np.ndarray) -> np.ndarray:
-  """
-  Returns the product of the matrices.
-  At least 2 matrices are required.
-
-  :param matrices: any number of matrices to be multiplied together.
-                   the matrix multiplication must be defined.
-  :return: the product of matrices used as argument
-  """
-  assert len(matrices) >= 2, "at least 2 matrices are required"
-
-  prod = np.dot(matrices[0], matrices[1])   # product to be returned
-  for i in range(2, len(matrices)):
-    prod = np.dot(prod, matrices[i])
-
-  return prod
-
-
-def add(*matrices:np.ndarray) -> np.ndarray:
-  """
-  Returns the sum of the matrices.
-  At least 2 matrices are required.
-
-  :param matrices: any number of matrices to be added together.
-                   all matrices must have the same dimension.
-  :return: the sum of the matrices used as argument
-  """
-  assert len(matrices) >= 2, "at least 2 matrices are required"
-
-  msum = np.add(matrices[0], matrices[1])   # sum to be returned
-  for i in range(2, len(matrices)):
-    msum = np.add(msum, matrices[i])
-
-  return msum
-
-
-def smul(c:Union[int, float], m:np.ndarray) -> np.ndarray:
-  """
-  Returns the scalar multiple of the matrix.
-
-  :param c: the scalar to be multiplied to
-  :param m: the matrix to be multiplied
-  :return: the resulting matrix
-  """
-  return c * m
-
-
-def subt(m1:np.ndarray, m2:np.ndarray) -> np.ndarray:
-  """
-  Returns the difference of two matrices, m1 - m2.
-  m1 and m2 must have the same dimension.
-
-  :param m1: matrix to be subtracted from
-  :param m2: matrix to subtract
-  :return: the matrix resulting from subtraction
-  """
-  return add(m1, smul(-1, m2))
-
-
-def det(m:np.ndarray) -> Union[int, float]:
-  """
-  Returns the determinant of the matrix.
-  The input matrix must be a non-empty 2-dimensional square matrix.
-  The determinant of an empty matrix is 1.
-
-  :param m: a 2-dimensional square matrix
-  :return: the determinant of the matrix
-  """
-  
-  assert m.ndim == 2, "matrix must be 2-dimensional"
-  assert m.shape[0] == m.shape[1], "matrix must be square"
-
-  l = m.shape[0]   # length
-  if l == 0:
-    return 1
-  if l == 1:
-    return m[0,0]
-  elif l == 2:
-    return (m[0,0] * m[1,1]) - (m[0,1] * m[1,0])
-  else:
-    result = 0
-    for col in range(l):
-      # expand matrix along the first row
-      left_piece = m[1:l, 0:col]
-      right_piece = m[1:l, col+1:l]
-      piece = np.hstack((left_piece, right_piece))
-
-      result += (-1)**(col) * m[0, col] * det(piece)
-    
-    return result
-    
+  return matrixer(np.identity(n, dtype))

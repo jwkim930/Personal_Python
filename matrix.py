@@ -132,7 +132,7 @@ def ienter(row: int, col: int) -> matrixer:
   while r != row:
     print(visual)
     new = input("Replace * with: ")
-    while not new.isnumeric():
+    while not new.lstrip('-').isnumeric():
       new = input("Non-integer input, try again: ")
     mx[r, c] = int(new)
 
@@ -273,14 +273,11 @@ def enter(row:int, col:int, showto:int=2, sci:bool=False) -> matrixer:
         :param s: string to be checked
         :return: true/false
         """
+        s = s.lstrip('-')   # negative is irrelevant for this
         # shortest string denoting scientific notation is 3 characters long (e.g. 3e0)
         if isfloat(s) and len(s) >= 3:
           # s[1] must be either '.' (e.g. 3.00e8) or 'E' (e.g. 2e8) for positive
-          # s[2] must be either '.' or 'E' for negative
-          if s[0] == '-':
-            return 'E' in s and s[2] in ('.', 'E')
-          else:
-            return 'E' in s and s[1] in ('.', 'E')
+          return 'E' in s and s[1] in ('.', 'E')
 
         return False
 

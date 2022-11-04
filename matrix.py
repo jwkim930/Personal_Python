@@ -7,28 +7,28 @@ class matrixer(object):
     """
     TO USERS: Please use ienter() or enter() instead of initializing directly.
     """
-    self.__matrix = mx
+    self.matrix = mx
     self.dim = mx.shape
     self.dtype = mx.dtype
 
   def __repr__(self):
-    mx = self.__matrix
+    mx = self.matrix
     return str(mx)
 
   def __str__(self):
-    mx = self.__matrix
+    mx = self.matrix
     return str(mx)
 
   def __add__(self, b):
     assert type(b) is matrixer, "addition must be between matrices"
-    return matrixer(np.add(self.__matrix, b.__matrix))
+    return matrixer(np.add(self.matrix, b.matrix))
 
   def __mul__(self, b):
     assert type(b) in (matrixer, int, float), "can only multiply number or matrix"
     if type(b) is matrixer:
-      return matrixer(np.dot(self.__matrix, b.__matrix))
+      return matrixer(np.dot(self.matrix, b.matrix))
     else:
-      return matrixer(np.dot(self.__matrix, b))
+      return matrixer(np.dot(self.matrix, b))
 
   def __sub__(self, b):
     assert type(b) is matrixer, "subtraction must be between matrices"
@@ -46,7 +46,7 @@ class matrixer(object):
     assert self.dim[0] == self.dim[1], "matrix must be square"
 
     l = self.dim[0]  # length
-    m = self.__matrix
+    m = self.matrix
 
     def de(m, l):
       if l == 0:
@@ -332,3 +332,41 @@ def identity(n:int, dtype:type=float) -> matrixer:
   :return: the n by n identity matrix
   """
   return matrixer(np.identity(n, dtype))
+
+
+def inverse(mat:matrixer) -> matrixer:
+    """
+    Returns the inverse of a square matrix.
+    The input matrix must be invertible.
+    The output matrix will be in floats.
+    May not work correctly with matrices with extremely small entries.
+
+    :param m: the matrix to find the inverse of
+    :return: the inverse of the input matrix
+    """
+    assert mat.dim[0] == mat.dim[1], "matrix must be square"
+    d = mat.det()
+    assert d < -0.00001 or d > 0.00001, "matrix is not invertible"
+    
+    l = mat.dim[0]
+    m = mat.matrix
+    result = np.zeros([l, l])
+    
+    for r in range(l):
+      for c in range(l):
+        # construct inverse by co-factor expansion
+        
+        # construct matrix minor (c,r)
+        top_left = m[0:c, 0:r]
+        top_right = m[0:c, r+1:l]
+        bot_left = m[c+1:l, 0:r]
+        bot_right = m[c+1:l, r+1:l]
+        top = np.hstack((top_left, top_right))
+        bottom = np.hstack((bot_left, bot_right))
+        piece = np.vstack((top, bottom))
+        piece = matrixer(piece)
+        
+        # assemble new matrix
+        result[r, c] = (-1) ** (c+r) * m[c,r] * piece.det()
+      
+      return matrixer(result * (1/d))

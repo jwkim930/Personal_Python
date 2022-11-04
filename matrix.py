@@ -341,7 +341,7 @@ def inverse(mat:matrixer) -> matrixer:
     The output matrix will be in floats.
     May not work correctly with matrices with extremely small entries.
 
-    :param m: the matrix to find the inverse of
+    :param mat: the matrix to find the inverse of
     :return: the inverse of the input matrix
     """
     assert mat.dim[0] == mat.dim[1], "matrix must be square"
@@ -354,7 +354,7 @@ def inverse(mat:matrixer) -> matrixer:
     
     for r in range(l):
       for c in range(l):
-        # construct inverse by co-factor expansion
+        # construct inverse by co-factor method
         
         # construct matrix minor (c,r)
         top_left = m[0:c, 0:r]
@@ -367,6 +367,6 @@ def inverse(mat:matrixer) -> matrixer:
         piece = matrixer(piece)
         
         # assemble new matrix
-        result[r, c] = (-1) ** (c+r) * m[c,r] * piece.det()
+        result[r, c] = (-1) ** (c+r) * piece.det()
       
-      return matrixer(result * (1/d))
+    return matrixer(result * (1/d))

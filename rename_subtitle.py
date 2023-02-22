@@ -60,9 +60,10 @@ assert int(subNum) == int(vidNum), "Subtitle and video start with different numb
 while subList[0] + subNum + subList[1] + subList[2] in files:
     old_subName = subList[0] + subNum + subList[1] + subList[2]
     new_subName = vidList[0] + vidNum + vidList[1] + subList[2]
-    os.rename(old_subName, new_subName)
-    print(old_subName)
-    print("->", new_subName)
+    if vidList[0] + vidNum + vidList[1] + vidList[2] in files:
+        os.rename(old_subName, new_subName)
+        print(old_subName)
+        print("->", new_subName)
 
     if len(vidNum) == 1 or int(vidNum) >= 9:
         # 1, 09, etc., no 0 in front for next number

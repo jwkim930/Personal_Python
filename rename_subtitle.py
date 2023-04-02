@@ -7,9 +7,9 @@ import os
 
 files = os.listdir()
 subName = input("Name of first subtitle (including extension): ")
-#assert subName in files, "File with such name could not be found in local directory."
+assert subName in files, "File with such name could not be found in local directory."
 vidName = input("Name of first video (including extension): ")
-#assert vidName in files, "File with such name could not be found in local directory."
+assert vidName in files, "File with such name could not be found in local directory."
 
 
 def nameExtract(name:str) -> list[str]:

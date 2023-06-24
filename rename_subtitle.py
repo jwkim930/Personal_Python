@@ -1,18 +1,52 @@
 # The naming scheme of both the subtitle and video must be
 # consistent, differing only in the number.
+# It's okay for characters after the episode number to differ.
+# The file extensions for subtitles must be the same,
+# same for videos.
 # Every consecutive number must be present.
 # This script never modifies the video name.
 
 import os
 
-files = os.listdir()
-subName = input("Name of first subtitle (including extension): ")
-assert subName in files, "File with such name could not be found in local directory."
-vidName = input("Name of first video (including extension): ")
-assert vidName in files, "File with such name could not be found in local directory."
+import natsort
 
 
-def nameExtract(name:str) -> list[str]:
+def nameExtract(name:str, elem=None) -> list[str]:
+    """
+    Extract elements of name from the input filename.
+    The parts are as follows:
+    1. The characters before the episode count
+    2. The characters representing the episode number
+    3. The characters after the episode count, before file extension
+    4. File extension, including '.'
+
+    This function prompts the user to confirm the position of the episode number.
+    If the list of element is given, then it assumes that the overall layout are the same
+    (and thus doesn't prompt the user for input).
+
+    :param name: The file name to be split
+    :param elem: A list produced from running nameExtract() on a name.
+    :return: A list of 4 strings as described above
+    """
+    if elem is None:
+        # no elem given
+        return nameExtractInitial(name)
+    elif len(elem) == 4:
+        # elem given
+        result = [elem[0]]   # first part shouldn't have changed
+        epsStartIndex = len(elem[0])
+        epsEndIndex = epsStartIndex
+        while name[epsEndIndex + 1].isnumeric() and epsEndIndex + 1 < len(name):
+            epsEndIndex += 1
+        result.append(name[epsStartIndex : epsEndIndex + 1])   # episode number
+        result.append(name[epsEndIndex + 1 : len(name) - len(elem[3])])   # after episode number
+        result.append(name[len(name) - len(elem[3]):])   # extension
+        return result
+    else:
+        assert True, "Invalid argument; list elem must have 4 strings."
+
+
+def nameExtractInitial(name:str) -> list[str]:
     """
     Extract elements of name from the input filename.
     The parts are as follows:
@@ -79,17 +113,70 @@ def add1(num:str):
     return nxt
 
 
-subElem = nameExtract(subName)
-vidElem = nameExtract(vidName)
+def filterbyepisode(filenames:list[str], elem:list[str]) -> list[str]:
+    """
+    Returns a list of filenames for same or later episodes.
 
-while subElem[0] + subElem[1] + subElem[2] + subElem[3] in files:
-    old_subName = subElem[0] + subElem[1] + subElem[2] + subElem[3]
-    new_subName = vidElem[0] + vidElem[1] + vidElem[2] + subElem[3]
-    if vidElem[0] + vidElem[1] + vidElem[2] + vidElem[3] in files:
-        os.rename(old_subName, new_subName)
-        print(old_subName)
-        print("->", new_subName)
-    subElem[1] = add1(subElem[1])
-    vidElem[1] = add1(vidElem[1])
+    :param filenames: The list of subtitle/video file names.
+    :param elem: The list created by running nameExtract() on the earliest episode.
+    :return: The sorted list of subtitle/video file names.
+    """
+    result = []
+    for file in filenames:
+        eps = int(nameExtract(file, elem)[1])
+        if eps >= int(elem[1]):
+            result.append(file)
+    return result
+
+
+files = os.listdir()
+files = natsort.natsorted(files)
+
+subName = input("Name of first subtitle (including extension): ")
+assert subName in files, "File with such name could not be found in local directory."
+vidName = input("Name of first video (including extension): ")
+assert vidName in files, "File with such name could not be found in local directory."
+
+subElem = nameExtract(subName)
+subList = []
+vidElem = nameExtract(vidName)
+vidList = []
+assert int(subElem[1]) == int(subElem[1]),\
+    "The episode names do not match between the first subtitle and video."
+
+# separate subtitles and videos
+# filter each by comparing only the first part
+for name in files:
+    ext = ''  # file extension
+    for i in range(len(name) - 1, -1, -1):
+        # separate file extension from name
+        if name[i] == '.':
+            ext = name[i:]
+            break
+    # both extension and first part of the name must match
+    if ext == subElem[3] and name[:len(subElem[0])] == subElem[0]:
+        subList.append(name)
+    elif ext == vidElem[3] and name[:len(vidElem[0])] == vidElem[0]:
+        vidList.append(name)
+
+# exclude subtitles/videos beyond the first one given
+subList = filterbyepisode(subList, subElem)
+vidList = filterbyepisode(vidList, vidElem)
+
+# change name
+while len(vidList) > 0 and len(subList) > 0:
+    # create new name
+    vidname = vidList.pop(0)
+    vid_elements = nameExtract(vidname, vidElem)
+    old_subname = subList.pop(0)
+    sub_elements = nameExtract(old_subname, subElem)
+    if int(sub_elements[1]) != int(vid_elements[1]):
+        break   # some episode number is missing
+    new_subname = vid_elements[0] + vid_elements[1] + vid_elements[2] + sub_elements[3]
+
+    # change name
+    os.rename(old_subname, new_subname)
+    print(old_subname)
+    print("->", new_subname)
 
 print("The script ran successfully.")

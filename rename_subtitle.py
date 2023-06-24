@@ -4,7 +4,8 @@
 # The file extensions for subtitles must be the same,
 # same for videos.
 # Every consecutive number must be present.
-# This script never modifies the video name.
+# This script never modifies the video name
+# as long as the initial setup is done properly.
 
 import os
 
@@ -141,8 +142,12 @@ subElem = nameExtract(subName)
 subList = []
 vidElem = nameExtract(vidName)
 vidList = []
-assert int(subElem[1]) == int(subElem[1]),\
-    "The episode names do not match between the first subtitle and video."
+sub_vid_episode_delta = int(subElem[1]) - int(vidElem[1])
+if sub_vid_episode_delta != 0:
+    response = input("The episode names do not seem to match. Are you sure this is correct? (Y/N): ").lower()
+    if response != "y":
+        print("Terminating script with no name change.")
+        exit(0)
 
 # separate subtitles and videos
 # filter each by comparing only the first part
@@ -170,7 +175,7 @@ while len(vidList) > 0 and len(subList) > 0:
     vid_elements = nameExtract(vidname, vidElem)
     old_subname = subList.pop(0)
     sub_elements = nameExtract(old_subname, subElem)
-    if int(sub_elements[1]) != int(vid_elements[1]):
+    if int(sub_elements[1]) != int(vid_elements[1]) + sub_vid_episode_delta:
         break   # some episode number is missing
     new_subname = vid_elements[0] + vid_elements[1] + vid_elements[2] + sub_elements[3]
 

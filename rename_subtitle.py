@@ -1,3 +1,5 @@
+# For advanced mode:
+
 # The naming scheme of both the subtitle and video must be
 # consistent, differing only in the number.
 # It's okay for characters after the episode number to differ.
@@ -7,18 +9,27 @@
 # This script never modifies the video name
 # as long as the initial setup is done properly.
 
+# For simple mode:
+
+# The file order is identified by natural sort,
+# along with distinguishing videos and subtitles by looking at
+# some known file extensions. Theoretically, if Windows file explorer
+# shows the episodes/subtitles in correct order and the extensions are
+# as known, this should work appropriately.
+
 import os
 
 import natsort
+# natsort is a natural sort by SethMMorton: https://github.com/SethMMorton/natsort
 
 
 def nameExtract(name:str, elem=None) -> list[str]:
     """
     Extract elements of name from the input filename.
     The parts are as follows:
-    1. The characters before the episode count
+    1. The characters before the episode number
     2. The characters representing the episode number
-    3. The characters after the episode count, before file extension
+    3. The characters after the episode number, before file extension
     4. File extension, including '.'
 
     This function prompts the user to confirm the position of the episode number.
@@ -51,9 +62,9 @@ def nameExtractInitial(name:str) -> list[str]:
     """
     Extract elements of name from the input filename.
     The parts are as follows:
-    1. The characters before the episode count
+    1. The characters before the episode number
     2. The characters representing the episode number
-    3. The characters after the episode count, before file extension
+    3. The characters after the episode number, before file extension
     4. File extension, including '.'
 
     This function prompts the user to confirm the position of the episode number.
@@ -71,8 +82,8 @@ def nameExtractInitial(name:str) -> list[str]:
     epis = ''   # episode number
     pre = ''   # characters before epis
     post = ''   # characters after epis
-    i = 0   # index of beginning of episode name
-    j = 0   # index of end of episode name
+    i = 0   # index of beginning of episode number
+    j = 0   # index of end of episode number
     while epis == '':
         while i < len(name):
             if name[i].isnumeric():
@@ -132,56 +143,100 @@ def filterbyepisode(filenames:list[str], elem:list[str]) -> list[str]:
 
 files = os.listdir()
 files = natsort.natsorted(files)
+vid_extensions = [".mkv", ".mp4", ".avi", ".mov"]
+sub_extensions = [".smi", ".ass"]
 
-subName = input("Name of first subtitle (including extension): ")
-assert subName in files, "File with such name could not be found in local directory."
-vidName = input("Name of first video (including extension): ")
-assert vidName in files, "File with such name could not be found in local directory."
+simple = None
+print("Do you want to use simple mode? This mode assumes every file is")
+print("in the right order and the file extensions are one of known ones.")
+while simple is None:
+    response = input("Enter Y or N: ").lower()
+    if response == 'y':
+        simple = True
+        break
+    elif response == 'n':
+        simple = False
+        break
 
-subElem = nameExtract(subName)
-subList = []
-vidElem = nameExtract(vidName)
-vidList = []
-sub_vid_episode_delta = int(subElem[1]) - int(vidElem[1])
-if sub_vid_episode_delta != 0:
-    response = input("The episode names do not seem to match. Are you sure this is correct? (Y/N): ").lower()
-    if response != "y":
-        print("Terminating script with no name change.")
-        exit(0)
-
-# separate subtitles and videos
-# filter each by comparing only the first part
-for name in files:
-    ext = ''  # file extension
-    for i in range(len(name) - 1, -1, -1):
-        # separate file extension from name
-        if name[i] == '.':
-            ext = name[i:]
-            break
-    # both extension and first part of the name must match
-    if ext == subElem[3] and name[:len(subElem[0])] == subElem[0]:
-        subList.append(name)
-    elif ext == vidElem[3] and name[:len(vidElem[0])] == vidElem[0]:
-        vidList.append(name)
-
-# exclude subtitles/videos beyond the first one given
-subList = filterbyepisode(subList, subElem)
-vidList = filterbyepisode(vidList, vidElem)
-
-# change name
-while len(vidList) > 0 and len(subList) > 0:
-    # create new name
-    vidname = vidList.pop(0)
-    vid_elements = nameExtract(vidname, vidElem)
-    old_subname = subList.pop(0)
-    sub_elements = nameExtract(old_subname, subElem)
-    if int(sub_elements[1]) != int(vid_elements[1]) + sub_vid_episode_delta:
-        break   # some episode number is missing
-    new_subname = vid_elements[0] + vid_elements[1] + vid_elements[2] + sub_elements[3]
-
+if not simple:
+    # advanced mode
+    subName = input("Name of first subtitle (including extension): ")
+    assert subName in files, "File with such name could not be found in local directory."
+    vidName = input("Name of first video (including extension): ")
+    assert vidName in files, "File with such name could not be found in local directory."
+    
+    subElem = nameExtract(subName)
+    subList = []
+    vidElem = nameExtract(vidName)
+    vidList = []
+    sub_vid_episode_delta = int(subElem[1]) - int(vidElem[1])
+    if sub_vid_episode_delta != 0:
+        response = input("The episode names do not seem to match. Are you sure this is correct? (Y/N): ").lower()
+        if response != "y":
+            print("Terminating script with no name change.")
+            exit(0)
+    
+    # separate subtitles and videos
+    # filter each by comparing only the first part
+    for name in files:
+        ext = ''  # file extension
+        for i in range(len(name) - 1, -1, -1):
+            # separate file extension from name
+            if name[i] == '.':
+                ext = name[i:]
+                break
+        # both extension and first part of the name must match
+        if ext == subElem[3] and name[:len(subElem[0])] == subElem[0]:
+            subList.append(name)
+        elif ext == vidElem[3] and name[:len(vidElem[0])] == vidElem[0]:
+            vidList.append(name)
+    
+    # exclude subtitles/videos beyond the first one given
+    subList = filterbyepisode(subList, subElem)
+    vidList = filterbyepisode(vidList, vidElem)
+    
     # change name
-    os.rename(old_subname, new_subname)
-    print(old_subname)
-    print("->", new_subname)
+    while len(vidList) > 0 and len(subList) > 0:
+        # create new name
+        vidname = vidList.pop(0)
+        vid_elements = nameExtract(vidname, vidElem)
+        old_subname = subList.pop(0)
+        sub_elements = nameExtract(old_subname, subElem)
+        if int(sub_elements[1]) != int(vid_elements[1]) + sub_vid_episode_delta:
+            break   # some episode number is missing
+        new_subname = vid_elements[0] + vid_elements[1] + vid_elements[2] + sub_elements[3]
+    
+        # change name
+        os.rename(old_subname, new_subname)
+        print(old_subname)
+        print("->", new_subname)
+else:
+    # simple mode
+    videos = []
+    subtitles = []
+    for file in files:
+        # extensions listed in the list are all three characters, so assume this
+        ext = file[len(file) - 4:]
+        if ext in vid_extensions:
+            videos.append(file)
+        elif ext in sub_extensions:
+            subtitles.append(file)
+    assert len(videos) > 0 and len(subtitles) > 0, "No video/subtitle found; add the file extension to the code if necessary."
+    if len(videos) != len(subtitles):
+        # assuming all subtitles have a matching video and no subtitle is missing,
+        # following the number of subtitles should give the desired result
+        assert len(videos) < len(subtitles), "More videos than subtitiles; delete unnecessary subtitles."
+        videos = videos[:len(subtitles)]
+    print("The following name changes will be made:")
+    for i in range(len(videos)):
+        print(subtitles[i])
+        print("   -> " + videos[i])
+    print("Do you want to proceed?")
+    response = input("Enter Y or N: ").lower()
+    if response == 'y':
+        for i in range(len(videos)):
+            os.rename(subtitles[i], videos[i])
+    else:
+        print("Terminating without changing name.")
 
 print("The script ran successfully.")

@@ -221,21 +221,24 @@ else:
             videos.append(file)
         elif ext in sub_extensions:
             subtitles.append(file)
-    assert len(videos) > 0 and len(subtitles) > 0, "No video/subtitle found; add the file extension to the code if necessary."
+    assert len(videos) > 0 and len(subtitles) > 0, "No video/subtitle found; add the file extension " \
+                                                   "to the code if necessary."
     if len(videos) != len(subtitles):
         # assuming all subtitles have a matching video and no subtitle is missing,
         # following the number of subtitles should give the desired result
-        assert len(videos) < len(subtitles), "More videos than subtitiles; delete unnecessary subtitles."
+        assert len(videos) > len(subtitles), "More subtitles than videos; delete unnecessary subtitles."
         videos = videos[:len(subtitles)]
+    new_subtitle_names = []
     print("The following name changes will be made:")
     for i in range(len(videos)):
         print(subtitles[i])
-        print("   -> " + videos[i])
+        new_subtitle_names.append(videos[i][:-4] + subtitles[i][-4:])
+        print("   -> " + new_subtitle_names[i])
     print("Do you want to proceed?")
     response = input("Enter Y or N: ").lower()
     if response == 'y':
         for i in range(len(videos)):
-            os.rename(subtitles[i], videos[i])
+            os.rename(subtitles[i], new_subtitle_names[i])
     else:
         print("Terminating without changing name.")
 

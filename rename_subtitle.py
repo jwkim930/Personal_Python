@@ -36,9 +36,13 @@ def nameExtract(name:str, elem=None) -> list[str]:
     If the list of element is given, then it assumes that the overall layout are the same
     (and thus doesn't prompt the user for input).
 
-    :param name: The file name to be split
+    If used on episodes with non-numeric episode number (such as OVA episodes) and this function
+    is called with elem argument, then the second element in the returned list will be "57877"
+    to let the program know to ignore it, since an episode number this large is very unlikely.
+
+    :param name: The file name to be split.
     :param elem: A list produced from running nameExtract() on a name.
-    :return: A list of 4 strings as described above
+    :return: A list of 4 strings as described above.
     """
     if elem is None:
         # no elem given
@@ -48,9 +52,14 @@ def nameExtract(name:str, elem=None) -> list[str]:
         result = [elem[0]]   # first part shouldn't have changed
         epsStartIndex = len(elem[0])
         epsEndIndex = epsStartIndex
-        while name[epsEndIndex + 1].isnumeric() and epsEndIndex + 1 < len(name):
-            epsEndIndex += 1
-        result.append(name[epsStartIndex : epsEndIndex + 1])   # episode number
+        if name[epsStartIndex].isnumeric():
+            # valid episode number
+            while name[epsEndIndex + 1].isnumeric() and epsEndIndex + 1 < len(name):
+                epsEndIndex += 1
+            result.append(name[epsStartIndex : epsEndIndex + 1])   # episode number
+        else:
+            # episode number is non-numeric
+            result.append("57877")
         result.append(name[epsEndIndex + 1 : len(name) - len(elem[3])])   # after episode number
         result.append(name[len(name) - len(elem[3]):])   # extension
         return result
@@ -128,6 +137,7 @@ def add1(num:str):
 def filterbyepisode(filenames:list[str], elem:list[str]) -> list[str]:
     """
     Returns a list of filenames for same or later episodes.
+    This function ignores episodes with a non-numeric episode number.
 
     :param filenames: The list of subtitle/video file names.
     :param elem: The list created by running nameExtract() on the earliest episode.
@@ -136,7 +146,7 @@ def filterbyepisode(filenames:list[str], elem:list[str]) -> list[str]:
     result = []
     for file in filenames:
         eps = int(nameExtract(file, elem)[1])
-        if eps >= int(elem[1]):
+        if eps != 57877 and eps >= int(elem[1]):
             result.append(file)
     return result
 

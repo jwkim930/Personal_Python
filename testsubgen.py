@@ -8,8 +8,9 @@ SFORMATT = " (1920x1080 AAC).ass"   # Last part of the subtitle name desired
 VNUM = "01"   # Video numbering
 SNUM = "01"   # Subtitle numbering
 TNUM = 12   # Number of files
-RANDOMIZE_SUB = False   # If true, add a randomized string to the beginning of SFORMATT
-RANDOMIZE_VID = False   # If true, add a randomized string to the beginning of VFORMATT
+RANDOMIZE_SUB = True   # If true, add a randomized string to the beginning of SFORMATT
+RANDOMIZE_VID = True   # If true, add a randomized string to the beginning of VFORMATT
+INCLUDE_OVA = True   # If true, add a video + subtitle pair with the episode number "OVA"
 
 
 def add1(num:str):
@@ -28,8 +29,13 @@ def add1(num:str):
     return nxt
 
 
-if not os.path.isdir("Test"):
+if os.path.isdir("Test"):
+    files = os.listdir("Test")
+    for f in files:
+        os.remove("Test\\" + f)
+else:
     os.mkdir(os.getcwd() + "\\Test")
+
 for i in range(TNUM):
     sub_tail = " [" + str(rand.randint(100000, 999999)) + "]" + SFORMATT if RANDOMIZE_SUB else SFORMATT
     vid_tail = " [" + str(rand.randint(100000, 999999)) + "]" + VFORMATT if RANDOMIZE_VID else VFORMATT
@@ -39,3 +45,10 @@ for i in range(TNUM):
     open(sname, 'x').close()
     VNUM = add1(VNUM)
     SNUM = add1(SNUM)
+if INCLUDE_OVA:
+    sub_tail = " [" + str(rand.randint(100000, 999999)) + "]" + SFORMATT if RANDOMIZE_SUB else SFORMATT
+    vid_tail = " [" + str(rand.randint(100000, 999999)) + "]" + VFORMATT if RANDOMIZE_VID else VFORMATT
+    vname = os.getcwd() + "\\Test\\" + VFORMATH + "OVA" + vid_tail
+    sname = os.getcwd() + "\\Test\\" + SFORMATH + "OVA" + sub_tail
+    open(vname, 'x').close()
+    open(sname, 'x').close()

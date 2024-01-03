@@ -1,14 +1,14 @@
-def sortdict(dict:dict, bykey:bool=False, descend:bool=False) -> dict:
+def sortdict(dct: dict, bykey: bool=False, descend: bool=False) -> list[list]:
     """
     Returns a list of lists containing the content of the dictionary, sorted in ascending order by value.
     Each list represents [key, value].
-    :param dict: the dictionary to be sorted (note: all keys/values must be comparable to each other)
+    :param dct: the dictionary to be sorted (note: all keys/values must be comparable to each other)
     :param bykey: when set to True, sorts by keys instead
     :param descend: when set to True, sorts in descending order
     :return: the sorted dictionary as a list of lists
     """
 
-    dlist = [[key, value] for key, value in dict.items()]
+    dlist = [[key, value] for key, value in dct.items()]
 
     if len(dlist) <= 1:
         return dlist

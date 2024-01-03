@@ -6,7 +6,7 @@
 ### subject code, course code, final grade, credit units, semester, year.
 # The final grade is ignored if it is a text
 
-from typing import List
+from typing import *
 from tabulate import tabulate
 
 
@@ -78,6 +78,50 @@ def print_credit_average(database: dict) -> None:
     print("Your overall weighted average is {}.".format(compute_average(database["GRD"], database["CRD"])))
 
 
+def take_input_criteria(*criteria: Callable[[str], bool]) -> str:
+    """
+    Re-prompts the user until a valid input is given based on the criteria.
+    If multiple criteria are given, every criterion must be met.
+    This function uses short-circuit boolean operation; that is, if the first given criterion fails,
+    then the user is re-prompted without evaluating the remaining criteria.
+
+    :param criteria: Callable (such as function) that takes one string as input (which will be the string
+                     from input()) and returns True if the input is valid, False if invalid.
+    :return: The validated input string.
+    """
+    return take_input_criteria_run(lambda a: a, *criteria)
+
+
+def take_input_criteria_run(run: Callable[[str], str], *criteria: Callable[[str], bool]) -> str:
+    """
+    Re-prompts the user until a valid input is given based on the criteria.
+    If multiple criteria are given, every criterion must be met.
+    This function uses short-circuit boolean operation; that is, if the first given criterion fails,
+    then the user is re-prompted without evaluating the remaining criteria.
+
+    :param criteria: Callable (such as function) that takes one string as input (which will be the string
+                     from input()) and returns True if the input is valid, False if invalid.
+    :param run: A Callable to be called on the input string before evaluating the string.
+                If used, the returned string will also have this applied.
+    :return: The validated input string.
+    """
+    inp = run(input("Your input: "))
+    valid = True
+    for crit in criteria:
+        if not crit(inp):
+            valid = False
+            break
+    while not valid:
+        inp = run(input("Invalid input; try again: "))
+        for crit in criteria:
+            if crit(inp):
+                valid = True
+            else:
+                valid = False
+                break
+    return inp
+
+
 # Read file
 filename = "John_Transcript.CSV"
 file = open(filename, 'r')
@@ -100,10 +144,9 @@ while True:
     print("MAIN MENU: Please select from the options:")
     print("1. List all courses.")
     print("2. List all courses of certain subject(s) and compute the average.")
-    print("3. Exit Program.")
-    user_input = input("Your Input: ")
-    while not user_input.isdigit() or int(user_input) not in range(1, 4):
-        user_input = input("Invalid input; try again: ")
+    print("3. List all courses that are 200-level or above.")
+    print("4. Exit Program.")
+    user_input = take_input_criteria(lambda inp: inp.isdigit(), lambda inp: int(inp) in range(1, 5))
     i = int(user_input)
     if i == 1:
         tabulate_database(database)
@@ -114,19 +157,12 @@ while True:
         print("You have taken courses in the following subjects:")
         print(', '.join(subjects).rstrip())
         print("Please enter the subject code(s) to list out, separated by commas.")
-        user_input = input("Your Input: ").replace(' ', '').upper()
-        targets = []
-        while True:
-            targets = user_input.split(',')
-            invalid_input = False
-            for inp in targets:
-                if inp not in subjects:
-                    invalid_input = True
-                    break
-            if invalid_input:
-                user_input = input("Invalid input; try again: ").replace(' ', '').upper()
-            else:
-                break
+
+        def is_valid_subjects(sub: str) -> bool:
+            global subjects
+            return set(sub.split(',')).issubset(subjects)
+        user_input = take_input_criteria_run(lambda inp: inp.replace(' ', '').upper(), is_valid_subjects)
+        targets = user_input.split(',')
         # Filter out the database
         filtered_database = {"SBJ": [], "CRS": [], "GRD": [], "CRD": [], "SEM": [], "YER": []}
         for i in range(course_count):
@@ -140,6 +176,18 @@ while True:
         tabulate_database(filtered_database)
         print_credit_average(filtered_database)
     elif i == 3:
+        filtered_database = {"SBJ": [], "CRS": [], "GRD": [], "CRD": [], "SEM": [], "YER": []}
+        for i in range(course_count):
+            if int(database["CRS"][i][0]) >= 2:
+                filtered_database["SBJ"].append(database["SBJ"][i])
+                filtered_database["CRS"].append(database["CRS"][i])
+                filtered_database["GRD"].append(database["GRD"][i])
+                filtered_database["CRD"].append(database["CRD"][i])
+                filtered_database["SEM"].append(database["SEM"][i])
+                filtered_database["YER"].append(database["YER"][i])
+        tabulate_database(filtered_database)
+        print_credit_average(filtered_database)
+    elif i == 4:
         break
     input("Press enter to return to the main menu...")
 print("Program terminated.")

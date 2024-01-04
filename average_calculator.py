@@ -238,7 +238,7 @@ while True:
                 if len(pair) != 2:
                     return False
                 for n in pair:
-                    if not n.isdigit:
+                    if not n.isdigit():
                         return False
             return True
         user_input = take_input_criteria_run(lambda inp: inp.replace(' ', ''), valid_input)

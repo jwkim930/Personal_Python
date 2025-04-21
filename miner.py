@@ -48,6 +48,7 @@ for i in range(n):
     pyautogui.moveTo(stage_location.left - 300, stage_location.top)
 
     # Wait for stage start
+    print("Waiting for stage start...")
     while True:
         check_key_interrupt()
         try:
@@ -55,10 +56,10 @@ for i in range(n):
             print("Stage start detected")
             break
         except pyautogui.ImageNotFoundException:
-            print("Waiting for stage start...")
             time.sleep(3)
 
     # Auto play until game finished
+    print("Auto play started")
     while True:
         check_key_interrupt()
         try:
@@ -67,7 +68,6 @@ for i in range(n):
             print("Stage end detected")
             break
         except pyautogui.ImageNotFoundException:
-            print("Auto playing...")
             pyautogui.press('p')
             time.sleep(0.5)
             pyautogui.press('enter')

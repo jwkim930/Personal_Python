@@ -10,7 +10,7 @@ import time
 import pyautogui
 from pynput import keyboard
 
-n = 1   # the number of times to play the stage
+n = (112 - 30) // 3   # the number of times to play the stage
 
 
 last_pressed = None
@@ -34,10 +34,10 @@ print("Starting listening...")
 listener.start()
 
 for i in range(n):
-    print("Stage count:", i+1)
+    print(f"Stage count: {i+1}/{n}")
     # Start mining stage
     print("Starting the mining stage...")
-    stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=0.9)
+    stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=0.99)
     dx = 50
     dy = 300
     pyautogui.click(stage_location.left + dx, stage_location.top + dy)
@@ -58,13 +58,13 @@ for i in range(n):
         except pyautogui.ImageNotFoundException:
             time.sleep(3)
 
-    # Auto play until game finished
+    # Autoplay until game finished
     print("Auto play started")
     while True:
         check_key_interrupt()
         try:
             # Stage done if stage icon can be found
-            pyautogui.locateOnScreen('mine_stage.png', confidence=0.9)
+            pyautogui.locateOnScreen('mine_stage.png', confidence=0.99)
             print("Stage end detected")
             break
         except pyautogui.ImageNotFoundException:

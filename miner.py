@@ -7,10 +7,13 @@ Update mine_stage.png and deltas as necessary. mine_stage.png should show the st
 """
 
 import time
+import random
 import pyautogui
 from pynput import keyboard
 
-n = (112 - 30) // 3   # the number of times to play the stage
+module_have = 157
+module_want_to_leave = 30
+n = (module_have - module_want_to_leave) // 3   # the number of times to play the stage
 
 
 last_pressed = None
@@ -18,8 +21,8 @@ def on_press(key):
     global last_pressed
     last_pressed = key
 def check_key_interrupt():
-    # stop if r key is pressed
-    if last_pressed == keyboard.KeyCode.from_char('r'):
+    # stop if r key or q key is pressed
+    if last_pressed in [keyboard.KeyCode.from_char('r'), keyboard.KeyCode.from_char('q')]:
         print("Quitting script...")
         listener.stop()
         quit(0)
@@ -37,11 +40,21 @@ for i in range(n):
     print(f"Stage count: {i+1}/{n}")
     # Start mining stage
     print("Starting the mining stage...")
-    stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=0.99)
+    # decrement confidence until an image is found
+    # play with the upper bound until it doesn't give too many false positives
+    stage_confidence = 0.95
+    stage_location = None
+    while stage_location is None and stage_confidence >= 0.5:
+        try:
+            stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=0.95)
+        except pyautogui.ImageNotFoundException:
+            stage_confidence -= 0.05
+    if stage_location is None:
+        raise pyautogui.ImageNotFoundException("image not found even at minimum confidence")
     dx = 50
-    dy = 300
+    dy = 280
     pyautogui.click(stage_location.left + dx, stage_location.top + dy)
-    time.sleep(0.5)
+    time.sleep(random.random() + 0.3)
     pyautogui.press('enter')
 
     # Move mouse out of the way for the loop
@@ -64,11 +77,11 @@ for i in range(n):
         check_key_interrupt()
         try:
             # Stage done if stage icon can be found
-            pyautogui.locateOnScreen('mine_stage.png', confidence=0.99)
+            pyautogui.locateOnScreen('mine_stage.png', confidence=0.95)
             print("Stage end detected")
             break
         except pyautogui.ImageNotFoundException:
             pyautogui.press('p')
-            time.sleep(0.5)
+            time.sleep(0.5 + random.random() * 0.25)
             pyautogui.press('enter')
-            time.sleep(3)
+            time.sleep(3 + random.random() * 0.5)

@@ -11,9 +11,11 @@ import random
 import pyautogui
 from pynput import keyboard
 
-module_have = 157
+module_have = 75
 module_want_to_leave = 30
 n = (module_have - module_want_to_leave) // 3   # the number of times to play the stage
+
+stage_confidence_lower_bound = 0.7   # increase if getting too many false positives
 
 
 last_pressed = None
@@ -42,15 +44,17 @@ for i in range(n):
     print("Starting the mining stage...")
     # decrement confidence until an image is found
     # play with the upper bound until it doesn't give too many false positives
-    stage_confidence = 0.95
     stage_location = None
-    while stage_location is None and stage_confidence >= 0.5:
+    stage_confidence = 0.95  # starting value
+    while stage_location is None and stage_confidence >= stage_confidence_lower_bound:
         try:
-            stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=0.95)
+            print(f"Attempting to locate mine stage with confidence {stage_confidence}...")
+            stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=stage_confidence)
         except pyautogui.ImageNotFoundException:
             stage_confidence -= 0.05
     if stage_location is None:
         raise pyautogui.ImageNotFoundException("image not found even at minimum confidence")
+    time.sleep(0.5)
     dx = 50
     dy = 280
     pyautogui.click(stage_location.left + dx, stage_location.top + dy)
@@ -77,7 +81,16 @@ for i in range(n):
         check_key_interrupt()
         try:
             # Stage done if stage icon can be found
-            pyautogui.locateOnScreen('mine_stage.png', confidence=0.95)
+            stage_confidence = 0.95
+            stage_location = None
+            while stage_location is None and stage_confidence >= stage_confidence_lower_bound:
+                try:
+                    print(f"Attempting to locate mine stage with confidence {stage_confidence}...")
+                    stage_location = pyautogui.locateOnScreen('mine_stage.png', confidence=stage_confidence)
+                except pyautogui.ImageNotFoundException:
+                    stage_confidence -= 0.05
+            if stage_location is None:
+                raise pyautogui.ImageNotFoundException("image not found even at minimum confidence")
             print("Stage end detected")
             break
         except pyautogui.ImageNotFoundException:
